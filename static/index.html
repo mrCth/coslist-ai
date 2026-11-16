@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>คอสลิสต์ เอไอ · CosList AI</title>
+<style>
+  :root {
+    --bg1: #eef1ff;
+    --bg2: #fce9f5;
+    --bg3: #e6fbf6;
+    --ink: #1c1b2e;
+    --ink-soft: #5b5876;
+    --card: rgba(255, 255, 255, 0.62);
+    --card-strong: rgba(255, 255, 255, 0.82);
+    --border: rgba(255, 255, 255, 0.75);
+    --line: rgba(30, 20, 60, 0.10);
+    --brand: #6c4cf1;
+    --brand2: #e0579a;
+    --accent: #12b3a6;
+    --warn: #c9720a;
+    --danger: #d43b5c;
+    --ok: #1a9e63;
+    --shadow: 0 18px 50px rgba(52, 33, 120, 0.16);
+    --radius: 20px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg1: #171429;
+      --bg2: #241a33;
+      --bg3: #10262a;
+      --ink: #f2f0ff;
+      --ink-soft: #b6b1d6;
+      --card: rgba(38, 33, 60, 0.55);
+      --card-strong: rgba(44, 38, 68, 0.82);
+      --border: rgba(255, 255, 255, 0.10);
+      --line: rgba(255, 255, 255, 0.12);
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Noto Sans Thai", "Sarabun", "Segoe UI", system-ui, -apple-system, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    background:
+      radial-gradient(1200px 700px at 12% -10%, var(--bg1), transparent 60%),
+      radial-gradient(1000px 700px at 100% 0%, var(--bg2), transparent 55%),
+      radial-gradient(1000px 900px at 50% 120%, var(--bg3), transparent 60%),
+      #f7f6ff;
+    background-attachment: fixed;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { background-color: #120f1f; }
+  }
+  a { color: var(--brand); }
+
+  /* layout */
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 18px 16px 80px; }
+  header.topbar {
+    position: sticky; top: 0; z-index: 20;
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar-inner {
+    max-width: 1080px; margin: 0 auto; padding: 12px 16px;
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.15rem; }
+  .brand .logo {
+    width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center;
+    background: linear-gradient(135deg, var(--brand), var(--brand2));
+    color: #fff; font-size: 1.15rem; box-shadow: var(--shadow);
+  }
+  .brand small { display: block; font-weight: 500; font-size: .68rem; color: var(--ink-soft); letter-spacing: .08em; }
+  .spacer { flex: 1 1 auto; }
+  nav.tabs { display: flex; gap: 6px; background: var(--card-strong); padding: 5px; border-radius: 999px; border: 1px solid var(--border); }
+  nav.tabs button {
+    border: 0; background: transparent; color: var(--ink-soft); font: inherit; font-weight: 600;
+    padding: 8px 16px; border-radius: 999px; cursor: pointer;
+  }
+  nav.tabs button[aria-selected="true"] { background: linear-gradient(135deg, var(--brand), var(--brand2)); color: #fff; }
+  .status-pill {
+    font-size: .74rem; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border);
+    background: var(--card-strong); color: var(--ink-soft); display: inline-flex; align-items: center; gap: 7px;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--warn); }
+  .dot.ok { background: var(--ok); }
+  .dot.bad { background: var(--danger); }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(22px) saturate(140%); -webkit-backdrop-filter: blur(22px) saturate(140%);
+    padding: 22px;
+  }
+  .card + .card { margin-top: 18px; }
+  h1, h2, h3 { line-height: 1.25; }
+  h1 { font-size: 1.6rem; margin: 0 0 6px; }
+  h2 { font-size: 1.2rem; margin: 0 0 4px; }
+  .muted { color: var(--ink-soft); font-size: .9rem; margin: 0; }
+  .hero { text-align: center; padding: 30px 22px; }
+  .hero h1 { font-size: 2rem; background: linear-gradient(120deg, var(--brand), var(--brand2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero p { max-width: 620px; margin: 8px auto 0; }
+
+  .grid { display: grid; gap: 16px; }
+  @media (min-width: 760px) { .grid.two { grid-template-columns: 1fr 1fr; } }
+
+  /* dropzone */
+  .dropzone {
+    border: 2px dashed color-mix(in srgb, var(--brand) 45%, transparent);
+    border-radius: 18px; padding: 26px 18px; text-align: center; cursor: pointer;
+    background: var(--card-strong); transition: .18s;
+  }
+  .dropzone:hover, .dropzone:focus-visible, .dropzone.drag { border-color: var(--brand); transform: translateY(-1px); outline: none; }
+  .dropzone .big { font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; }
+  .previews { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; margin-top: 14px; }
+  .thumb { position: relative; border-radius: 14px; overflow: hidden; aspect-ratio: 1; border: 1px solid var(--border); background: var(--card-strong); }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumb button {
+    position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 50%;
+    border: 0; background: rgba(0,0,0,.6); color: #fff; cursor: pointer; font-size: .8rem; line-height: 1;
+  }
+
+  label.field { display: block; margin-top: 14px; font-weight: 600; font-size: .88rem; }
+  label.field span.hint { font-weight: 400; color: var(--ink-soft); }
+  input[type="text"], input[type="number"], textarea, select {
+    width: 100%; margin-top: 6px; padding: 11px 13px; border-radius: 12px;
+    border: 1px solid var(--line); background: var(--card-strong); color: var(--ink);
+    font: inherit; font-size: .95rem;
+  }
+  textarea { resize: vertical; min-height: 78px; }
+  input:focus, textarea:focus, select:focus { outline: 2px solid color-mix(in srgb, var(--brand) 55%, transparent); outline-offset: 1px; }
+
+  .btn {
+    border: 0; cursor: pointer; font: inherit; font-weight: 700; border-radius: 14px;
+    padding: 12px 20px; color: #fff; background: linear-gradient(135deg, var(--brand), var(--brand2));
+    box-shadow: 0 10px 26px rgba(108, 76, 241, .32); transition: .16s;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+  .btn.block { width: 100%; padding: 16px; font-size: 1.05rem; margin-top: 18px; }
+  .btn.ghost { background: var(--card-strong); color: var(--ink); border: 1px solid var(--line); box-shadow: none; }
+  .btn.small { padding: 8px 13px; font-size: .82rem; border-radius: 10px; }
+  .btn.danger { background: linear-gradient(135deg, #e0526f, #b7304f); box-shadow: none; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+  .alert { border-radius: 14px; padding: 13px 15px; margin-top: 14px; font-size: .9rem; border: 1px solid var(--line); display: flex; gap: 10px; align-items: flex-start; }
+  .alert.error { background: color-mix(in srgb, var(--danger) 14%, transparent); border-color: color-mix(in srgb, var(--danger) 40%, transparent); }
+  .alert.warn { background: color-mix(in srgb, var(--warn) 14%, transparent); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
+  .alert.info { background: color-mix(in srgb, var(--accent) 14%, transparent); border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+  .alert strong { display: block; margin-bottom: 2px; }
+
+  .loader { margin-top: 20px; text-align: center; }
+  .bar { height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; margin-top: 12px; }
+  .bar > i { display: block; height: 100%; width: 12%; border-radius: 999px; background: linear-gradient(90deg, var(--brand), var(--brand2)); animation: slide 1.6s ease-in-out infinite; }
+  @keyframes slide { 0% { margin-left: 0; } 50% { margin-left: 76%; } 100% { margin-left: 0; } }
+  .spin { width: 30px; height: 30px; margin: 0 auto; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--brand); animation: rot .8s linear infinite; }
+  @keyframes rot { to { transform: rotate(360deg); } }
+
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; font-weight: 700; font-size: .82rem; }
+  .grade-A { background: #d8f6e6; color: #0d6b41; }
+  .grade-B { background: #e2ecff; color: #22439c; }
+  .grade-C { background: #fff0d6; color: #8a5a00; }
+  .grade-D { background: #ffe0e6; color: #9c1f38; }
+  @media (prefers-color-scheme: dark) {
+    .grade-A { background: #12492f; color: #b7f4d3; }
+    .grade-B { background: #1b2c5c; color: #bcd0ff; }
+    .grade-C { background: #4a3508; color: #ffe1a8; }
+    .grade-D { background: #4d1725; color: #ffc3ce; }
+  }
+  .chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 12px; background: var(--card-strong); border: 1px solid var(--line); font-weight: 700; }
+  .tag { display: inline-block; padding: 4px 10px; margin: 3px 4px 0 0; border-radius: 999px; background: var(--card-strong); border: 1px solid var(--line); font-size: .78rem; }
+
+  ul.checklist { list-style: none; padding: 0; margin: 8px 0 0; }
+  ul.checklist li { display: flex; gap: 9px; align-items: flex-start; padding: 6px 0; font-size: .9rem; }
+  ul.checklist input { margin-top: 3px; }
+
+  .listing-card { display: flex; gap: 14px; padding: 12px; border-radius: 16px; border: 1px solid var(--line); background: var(--card-strong); }
+  .listing-card .lc-thumb { width: 88px; height: 88px; border-radius: 12px; object-fit: cover; background: var(--line); flex: 0 0 auto; }
+  .listing-card .lc-body { min-width: 0; flex: 1; }
+  .listing-card h3 { margin: 0 0 4px; font-size: 1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .listing-card .lc-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
+  .grid.cards { grid-template-columns: 1fr; }
+  @media (min-width: 720px) { .grid.cards { grid-template-columns: 1fr 1fr; } }
+
+  .stat { text-align: center; padding: 18px; border-radius: 16px; background: var(--card-strong); border: 1px solid var(--line); }
+  .stat b { display: block; font-size: 1.9rem; background: linear-gradient(120deg, var(--brand), var(--brand2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .stat span { font-size: .82rem; color: var(--ink-soft); }
+
+  .kv { font-size: .82rem; color: var(--ink-soft); }
+  .toast {
+    position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(20px);
+    background: var(--ink); color: #fff; padding: 12px 20px; border-radius: 999px; opacity: 0;
+    transition: .25s; pointer-events: none; z-index: 60; font-size: .88rem; max-width: 90vw;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .hidden { display: none !important; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  footer { text-align: center; color: var(--ink-soft); font-size: .8rem; margin-top: 30px; }
+  dialog.modal {
+    border: 1px solid var(--border); border-radius: 20px; padding: 0; max-width: 560px; width: calc(100% - 32px);
+    background: var(--card-strong); color: var(--ink); box-shadow: var(--shadow); backdrop-filter: blur(20px);
+  }
+  dialog.modal::backdrop { background: rgba(20, 12, 40, .45); backdrop-filter: blur(4px); }
+  dialog.modal .modal-body { padding: 20px; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">✦</div>
+      <div>คอสลิสต์ เอไอ<small>COSLIST AI · AI AS A SERVICE</small></div>
+    </div>
+    <div class="spacer"></div>
+    <nav class="tabs" role="tablist" aria-label="เมนูหลัก">
+      <button role="tab" id="tab-create" aria-selected="true" data-screen="create">สร้างประกาศ</button>
+      <button role="tab" id="tab-listings" aria-selected="false" data-screen="listings">ประกาศของฉัน</button>
+      <button role="tab" id="tab-stats" aria-selected="false" data-screen="stats">สถิติ</button>
+    </nav>
+    <span class="status-pill" id="status-pill" title="สถานะบริการ AI">
+      <span class="dot" id="status-dot"></span><span id="status-text">กำลังตรวจสอบ…</span>
+    </span>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- ================= SCREEN 1: CREATE ================= -->
+  <section id="screen-create">
+    <div class="card hero">
+      <h1>ขายชุดคอสเพลย์/เสื้อผ้ามือสอง ให้ AI ช่วยร่างประกาศ</h1>
+      <p class="muted">อัปโหลดรูป 1–4 รูป กรอกข้อมูลเพิ่มเติม (ไม่บังคับ) แล้วให้ AI ช่วยร่างหัวข้อ คำอธิบาย สภาพ และช่วงราคาโดยประมาณให้ทันที — คุณแก้ไขต่อได้ทุกช่องก่อนบันทึก</p>
+    </div>
+
+    <div class="card">
+      <h2>1) รูปสินค้า</h2>
+      <p class="muted">สูงสุด 4 รูป · JPG/PNG/WEBP · รูปละไม่เกิน 5 MB · ระบบย่อรูปให้อัตโนมัติ</p>
+      <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="เลือกหรือลากรูปสินค้า">
+        <div class="big">ลากรูปมาวาง หรือคลิกเพื่อเลือก</div>
+        <div class="muted">ถ่ายรูปจากมือถือได้เลย</div>
+      </div>
+      <input type="file" id="file-input" class="sr" accept="image/jpeg,image/png,image/webp" multiple />
+      <input type="file" id="camera-input" class="sr" accept="image/*" capture="environment" />
+      <div class="row" style="margin-top:10px">
+        <button class="btn ghost small" id="btn-pick" type="button">เลือกรูป</button>
+        <button class="btn ghost small" id="btn-camera" type="button">ถ่ายรูป</button>
+      </div>
+      <div class="previews" id="previews"></div>
+
+      <div class="grid two">
+        <div>
+          <label class="field" for="f-notes">บันทึกเพิ่มเติม <span class="hint">(เช่น ตัวละคร, ใช้แล้วกี่ครั้ง, ตำหนิ)</span></label>
+          <textarea id="f-notes" placeholder="เช่น คอสเพลย์ตัวละคร X ใส่ครั้งเดียว มีรอยที่ชายกระโปรงเล็กน้อย"></textarea>
+        </div>
+        <div>
+          <label class="field" for="f-size">ไซซ์ <span class="hint">(ถ้าทราบ)</span></label>
+          <input type="text" id="f-size" placeholder="เช่น M, L, ฟรีไซซ์" />
+          <label class="field" for="f-brand">แบรนด์ <span class="hint">(ถ้าทราบ)</span></label>
+          <input type="text" id="f-brand" placeholder="เช่น Uniqlo, Taobao" />
+          <label class="field" for="f-price">ราคาที่ซื้อมา (บาท) <span class="hint">(ใช้ช่วยประเมินราคา)</span></label>
+          <input type="number" id="f-price" min="0" step="1" placeholder="เช่น 1200" />
+        </div>
+      </div>
+
+      <button class="btn block" id="btn-analyze" type="button">ให้ AI ช่วยร่างประกาศ</button>
+
+      <div class="loader hidden" id="loader" aria-live="polite">
+        <div class="spin" aria-hidden="true"></div>
+        <p class="muted" id="loader-text" style="margin-top:10px">กำลังส่งรูปให้ AI วิเคราะห์…</p>
+        <div class="bar"><i></i></div>
+      </div>
+      <div id="analyze-error" class="hidden"></div>
+    </div>
+
+    <div id="result-wrap" class="hidden"></div>
+  </section>
+
+  <!-- ================= SCREEN 2: LISTINGS ================= -->
+  <section id="screen-listings" class="hidden">
+    <div class="card">
+      <div class="row">
+        <div style="flex:1 1 260px">
+          <h2>ประกาศของฉัน</h2>
+          <p class="muted">ประกาศที่บันทึกไว้ทั้งหมด</p>
+        </div>
+        <div style="flex:1 1 220px">
+          <label class="field sr" for="f-search">ค้นหา</label>
+          <input type="text" id="f-search" placeholder="ค้นหาจากหัวข้อ / แท็ก" />
+        </div>
+        <button class="btn ghost" id="btn-refresh" type="button">รีเฟรช</button>
+      </div>
+      <div id="listings-error" class="hidden"></div>
+      <div class="grid cards" id="listings-grid" style="margin-top:16px"></div>
+      <p class="muted hidden" id="listings-empty">ยังไม่มีประกาศที่บันทึกไว้</p>
+    </div>
+  </section>
+
+  <!-- ================= SCREEN 3: STATS ================= -->
+  <section id="screen-stats" class="hidden">
+    <div class="card">
+      <h2>สถิติการใช้งาน</h2>
+      <p class="muted">ภาพรวมจากประกาศที่บันทึกไว้และการใช้ร่าง AI</p>
+      <div class="grid two" id="stats-grid" style="margin-top:16px"></div>
+      <div id="stats-error" class="hidden"></div>
+    </div>
+  </section>
+
+  <footer>
+    CosList AI · DIT323 “Artificial Intelligence as a Service” · ราคาที่ AI เสนอเป็นเพียงการประมาณการ ไม่ใช่ราคาตลาดจริง
+  </footer>
+</div>
+
+<dialog class="modal" id="edit-modal">
+  <div class="modal-body">
+    <h2 id="edit-title">แก้ไขประกาศ</h2>
+    <p class="muted" id="edit-sub"></p>
+    <label class="field" for="e-title">หัวข้อ</label>
+    <input type="text" id="e-title" />
+    <label class="field" for="e-desc">คำอธิบาย</label>
+    <textarea id="e-desc"></textarea>
+    <div class="grid two">
+      <div>
+        <label class="field" for="e-grade">เกรดสภาพ</label>
+        <select id="e-grade"><option>A</option><option>B</option><option>C</option><option>D</option></select>
+      </div>
+      <div>
+        <label class="field" for="e-category">หมวดหมู่</label>
+        <select id="e-category"></select>
+      </div>
+      <div>
+        <label class="field" for="e-min">ราคาต่ำสุด (บาท)</label>
+        <input type="number" id="e-min" min="0" />
+      </div>
+      <div>
+        <label class="field" for="e-max">ราคาสูงสุด (บาท)</label>
+        <input type="number" id="e-max" min="0" />
+      </div>
+    </div>
+    <label class="field" for="e-tags">แท็ก <span class="hint">(คั่นด้วยเครื่องหมายจุลภาค)</span></label>
+    <input type="text" id="e-tags" />
+    <div class="row" style="margin-top:18px;justify-content:flex-end">
+      <button class="btn ghost" id="e-cancel" type="button">ยกเลิก</button>
+      <button class="btn danger" id="e-delete" type="button">ลบ</button>
+      <button class="btn" id="e-save" type="button">บันทึก</button>
+    </div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+/* ------------------------------------------------------------------ *
+ * State
+ * ------------------------------------------------------------------ */
+const state = {
+  images: [],        // [{ blob, url }]
+  draft: null,       // ListingDraft from /api/analyze
+  config: null,
+  listings: [],
+  editId: null,
+};
+
+const MAX_IMAGES = 4;
+const MAX_LONG_SIDE = 1024;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const ALLOWED = ["image/jpeg", "image/png", "image/webp"];
+
+const CATEGORY_LABELS = {
+  cosplay_costume: "ชุดคอสเพลย์",
+  wig: "วิก/ผมปลอม",
+  accessory: "เครื่องประดับ",
+  prop: "พร็อพ/อุปกรณ์ประกอบ",
+  shoes: "รองเท้า",
+  top: "เสื้อ/ท็อป",
+  bottom: "กางเกง/กระโปรง",
+  dress: "เดรส/ชุดเดรส",
+  outerwear: "เสื้อคลุม/แจ็คเก็ต",
+  other: "อื่น ๆ",
+};
+const CONFIDENCE_LABELS = { low: "ต่ำ", medium: "ปานกลาง", high: "สูง" };
+
+/* ------------------------------------------------------------------ *
+ * Tiny helpers
+ * ------------------------------------------------------------------ */
+const $ = (id) => document.getElementById(id);
+
+function el(tag, opts = {}, children = []) {
+  const node = document.createElement(tag);
+  if (opts.class) node.className = opts.class;
+  if (opts.text != null) node.textContent = opts.text;
+  if (opts.attrs) for (const [k, v] of Object.entries(opts.attrs)) node.setAttribute(k, v);
+  if (opts.on) for (const [k, v] of Object.entries(opts.on)) node.addEventListener(k, v);
+  for (const c of children) node.appendChild(c);
+  return node;
+}
+
+let toastTimer = null;
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+function showError(containerId, title, message) {
+  const box = $(containerId);
+  box.className = "alert error";
+  box.replaceChildren(
+    el("span", { text: "⚠️" }),
+    el("div", {}, [
+      el("strong", { text: title }),
+      el("span", { text: message || "" }),
+    ])
+  );
+}
+
+function clearError(containerId) {
+  const box = $(containerId);
+  box.className = "hidden";
+  box.replaceChildren();
+}
+
+function fmtTHB(n) {
+  if (n == null || n === "") return "—";
+  return Number(n).toLocaleString("th-TH");
+}
+
+function statusClass(grade) { return "badge grade-" + String(grade || "B"); }
+
+/* ------------------------------------------------------------------ *
+ * Navigation
+ * ------------------------------------------------------------------ */
+function go(screen) {
+  for (const id of ["create", "listings", "stats"]) {
+    $("screen-" + id).classList.toggle("hidden", id !== screen);
+    const tab = $("tab-" + id);
+    tab.setAttribute("aria-selected", id === screen ? "true" : "false");
+  }
+  if (screen === "listings") loadListings();
+  if (screen === "stats") loadStats();
+}
+document.querySelectorAll("nav.tabs button").forEach((b) => {
+  b.addEventListener("click", () => go(b.dataset.screen));
+});
+
+/* ------------------------------------------------------------------ *
+ * Provider status + config
+ * ------------------------------------------------------------------ */
+async function loadStatus() {
+  const dot = $("status-dot");
+  const text = $("status-text");
+  try {
+    const res = await fetch("/health");
+    const data = await res.json();
+    dot.className = "dot " + (data.ai_ready ? "ok" : "bad");
+    text.textContent = (data.ai_ready ? "AI พร้อม · " : "AI ไม่พร้อม · ") +
+      data.provider + " / " + data.model;
+    $("status-pill").title = data.ai_detail || "";
+  } catch (e) {
+    dot.className = "dot bad";
+    text.textContent = "เชื่อมต่อบริการไม่ได้";
+  }
+}
+
+async function loadConfig() {
+  try {
+    const res = await fetch("/api/config");
+    state.config = await res.json();
+    const sel = $("e-category");
+    sel.replaceChildren();
+    for (const c of state.config.categories) {
+      sel.appendChild(el("option", { text: CATEGORY_LABELS[c] || c, attrs: { value: c } }));
+    }
+  } catch (e) { /* non fatal */ }
+}
+
+/* ------------------------------------------------------------------ *
+ * Image handling
+ * ------------------------------------------------------------------ */
+function resizeToBlob(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, MAX_LONG_SIDE / Math.max(img.width, img.height));
+      const w = Math.max(1, Math.round(img.width * scale));
+      const h = Math.max(1, Math.round(img.height * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      canvas.toBlob(
+        (blob) => { URL.revokeObjectURL(url); blob ? resolve(blob) : reject(new Error("resize")); },
+        "image/jpeg", 0.9
+      );
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("decode")); };
+    img.src = url;
+  });
+}
+
+async function addFiles(fileList) {
+  clearError("analyze-error");
+  const incoming = Array.from(fileList || []);
+  for (const file of incoming) {
+    if (state.images.length >= MAX_IMAGES) { toast("เพิ่มได้สูงสุด " + MAX_IMAGES + " รูป"); break; }
+    if (!ALLOWED.includes(file.type)) { toast("รองรับเฉพาะ JPG, PNG, WEBP"); continue; }
+    if (file.size > MAX_IMAGE_BYTES) { toast("รูปใหญ่เกิน 5 MB"); continue; }
+    try {
+      const blob = await resizeToBlob(file);
+      state.images.push({ blob, url: URL.createObjectURL(blob) });
+    } catch (e) { toast("อ่านรูปไม่สำเร็จ"); }
+  }
+  renderPreviews();
+}
+
+function renderPreviews() {
+  const wrap = $("previews");
+  wrap.replaceChildren();
+  state.images.forEach((item, idx) => {
+    const img = el("img", { attrs: { src: item.url, alt: "รูปสินค้า " + (idx + 1) } });
+    const del = el("button", {
+      text: "×",
+      attrs: { type: "button", "aria-label": "ลบรูปที่ " + (idx + 1) },
+      on: { click: () => { state.images.splice(idx, 1); renderPreviews(); } },
+    });
+    wrap.appendChild(el("div", { class: "thumb" }, [img, del]));
+  });
+  $("btn-analyze").disabled = state.images.length === 0;
+}
+
+function setupDropzone() {
+  const dz = $("dropzone");
+  dz.addEventListener("click", () => $("file-input").click());
+  dz.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("file-input").click(); }
+  });
+  ["dragenter", "dragover"].forEach((ev) =>
+    dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.add("drag"); }));
+  ["dragleave", "drop"].forEach((ev) =>
+    dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.remove("drag"); }));
+  dz.addEventListener("drop", (e) => { if (e.dataTransfer) addFiles(e.dataTransfer.files); });
+  $("file-input").addEventListener("change", (e) => { addFiles(e.target.files); e.target.value = ""; });
+  $("camera-input").addEventListener("change", (e) => { addFiles(e.target.files); e.target.value = ""; });
+  $("btn-pick").addEventListener("click", () => $("file-input").click());
+  $("btn-camera").addEventListener("click", () => $("camera-input").click());
+}
+
+/* ------------------------------------------------------------------ *
+ * Analyze
+ * ------------------------------------------------------------------ */
+const LOADING_STEPS = [
+  "กำลังส่งรูปให้ AI วิเคราะห์…",
+  "AI กำลังดูรายละเอียดของภาพ…",
+  "กำลังประเมินสภาพและช่วงราคา…",
+  "กำลังเรียบเรียงร่างประกาศ…",
+];
+
+async function analyze() {
+  if (state.images.length === 0) { toast("กรุณาเพิ่มรูปก่อน"); return; }
+  clearError("analyze-error");
+  $("result-wrap").classList.add("hidden");
+  const loader = $("loader");
+  loader.classList.remove("hidden");
+  $("btn-analyze").disabled = true;
+
+  let step = 0;
+  $("loader-text").textContent = LOADING_STEPS[0];
+  const timer = setInterval(() => {
+    step = (step + 1) % LOADING_STEPS.length;
+    $("loader-text").textContent = LOADING_STEPS[step];
+  }, 4000);
+
+  const fd = new FormData();
+  state.images.forEach((item, i) => fd.append("images", item.blob, "photo_" + (i + 1) + ".jpg"));
+  fd.append("notes", $("f-notes").value);
+  fd.append("size", $("f-size").value);
+  fd.append("brand", $("f-brand").value);
+  const price = $("f-price").value;
+  if (price !== "") fd.append("purchase_price_thb", price);
+
+  try {
+    const res = await fetch("/api/analyze", { method: "POST", body: fd });
+    if (!res.ok) {
+      let detail = "เกิดข้อผิดพลาด (" + res.status + ")";
+      try { const j = await res.json(); detail = j.detail || detail; } catch (e) {}
+      if (res.status === 413) showError("analyze-error", "รูปใหญ่เกินไป", detail);
+      else if (res.status === 415) showError("analyze-error", "ชนิดไฟล์ไม่รองรับ", detail);
+      else if (res.status === 429) showError("analyze-error", "เรียกใช้บ่อยเกินไป", detail);
+      else if (res.status === 502) showError("analyze-error", "AI วิเคราะห์ไม่สำเร็จ", detail);
+      else if (res.status === 422) showError("analyze-error", "ข้อมูลไม่ครบถ้วน", detail);
+      else showError("analyze-error", "เกิดข้อผิดพลาด", detail);
+      return;
+    }
+    state.draft = await res.json();
+    renderResult(state.draft);
+    toast("AI ร่างประกาศให้แล้ว");
+  } catch (e) {
+    showError("analyze-error", "เชื่อมต่อบริการ AI ไม่ได้", "กรุณาตรวจสอบว่าเซิร์ฟเวอร์ทำงานอยู่ แล้วลองใหม่");
+  } finally {
+    clearInterval(timer);
+    loader.classList.add("hidden");
+    $("btn-analyze").disabled = state.images.length === 0;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Result rendering (editable)
+ * ------------------------------------------------------------------ */
+function labeledInput(labelText, value, id, hint) {
+  const label = el("label", { class: "field", attrs: { for: id } });
+  label.appendChild(document.createTextNode(labelText));
+  if (hint) label.appendChild(el("span", { class: "hint", text: " " + hint }));
+  const input = el("input", { attrs: { type: "text", id } });
+  input.value = value || "";
+  return [label, input];
+}
+
+function renderResult(draft) {
+  const wrap = $("result-wrap");
+  wrap.replaceChildren();
+
+  const meta = draft.meta || {};
+  const header = el("div", { class: "card" }, [
+    el("div", { class: "row" }, [
+      el("h2", { text: "ร่างประกาศจาก AI" }),
+      el("div", { class: "spacer" }),
+      el("span", { class: statusClass(draft.condition_grade), text: "เกรดสภาพ " + draft.condition_grade }),
+    ]),
+    el("p", {
+      class: "muted",
+      text: "โมเดล " + (meta.model || "-") + " · ผู้ให้บริการ " + (meta.provider || "-") +
+            " · ใช้เวลา " + (meta.latency_ms || 0) + " ms" + (meta.retries ? " · ลองซ้ำ " + meta.retries + " ครั้ง" : ""),
+    }),
+  ]);
+  wrap.appendChild(header);
+
+  const form = el("div", { class: "card" });
+  form.appendChild(el("h3", { text: "แก้ไขรายละเอียดก่อนบันทึก" }));
+
+  const t1 = labeledInput("หัวข้อ (ไม่เกิน 80 ตัวอักษร)", draft.title_th, "r-title");
+  form.append(t1[0], t1[1]);
+
+  const descLabel = el("label", { class: "field", attrs: { for: "r-desc" } });
+  descLabel.textContent = "คำอธิบาย";
+  const desc = el("textarea", { attrs: { id: "r-desc" } });
+  desc.value = draft.description_th || "";
+  form.append(descLabel, desc);
+
+  // category
+  const catLabel = el("label", { class: "field", attrs: { for: "r-category" } });
+  catLabel.textContent = "หมวดหมู่";
+  const catSel = el("select", { attrs: { id: "r-category" } });
+  const cats = (state.config && state.config.categories) || Object.keys(CATEGORY_LABELS);
+  for (const c of cats) {
+    const opt = el("option", { text: CATEGORY_LABELS[c] || c, attrs: { value: c } });
+    if (c === draft.category) opt.selected = true;
+    catSel.appendChild(opt);
+  }
+  form.append(catLabel, catSel);
+
+  // character guess
+  const cg = draft.character_or_series_guess || {};
+  const cgLabel = el("label", { class: "field", attrs: { for: "r-char" } });
+  cgLabel.appendChild(document.createTextNode("ตัวละคร/ซีรีส์ (เดาจากภาพ)"));
+  cgLabel.appendChild(el("span", { class: "hint", text: " · ความมั่นใจ: " + (CONFIDENCE_LABELS[cg.confidence] || "-") }));
+  const cgInput = el("input", { attrs: { type: "text", id: "r-char" } });
+  cgInput.value = cg.name || "";
+  form.append(cgLabel, cgInput);
+  if (cg.disclaimer_th) {
+    form.appendChild(el("div", { class: "alert info" }, [
+      el("span", { text: "🔎" }),
+      el("span", { text: cg.disclaimer_th }),
+    ]));
+  }
+
+  // price chip
+  const price = draft.suggested_price_thb || {};
+  const priceRow = el("div", { class: "row", attrs: { style: "margin-top:16px" } }, [
+    el("span", { class: "chip", text: "ประมาณ " + fmtTHB(price.min) + " – " + fmtTHB(price.max) + " บาท" }),
+    el("span", { class: "kv", text: price.disclaimer_th || "ราคาเป็นเพียงการประมาณการ" }),
+  ]);
+  form.appendChild(priceRow);
+  if (price.reasoning) form.appendChild(el("p", { class: "muted", text: "เหตุผล: " + price.reasoning }));
+
+  // condition reasons
+  if ((draft.condition_reasons || []).length) {
+    form.appendChild(el("h3", { text: "เหตุผลของเกรดสภาพ (จากภาพ)" }));
+    const ul = el("ul", { class: "checklist" });
+    for (const r of draft.condition_reasons) ul.appendChild(el("li", { text: "• " + r }));
+    form.appendChild(ul);
+  }
+
+  // colors + materials + tags
+  const cm = el("div", { class: "grid two" });
+  cm.appendChild(listBlock("สีที่มองเห็น", draft.colors));
+  cm.appendChild(listBlock("วัสดุ (คาดเดาจากภาพ)", draft.materials_guess));
+  form.appendChild(cm);
+
+  const tagsLabel = el("label", { class: "field", attrs: { for: "r-tags" } });
+  tagsLabel.appendChild(document.createTextNode("แท็ก"));
+  tagsLabel.appendChild(el("span", { class: "hint", text: " (คั่นด้วยเครื่องหมายจุลภาค)" }));
+  const tagsInput = el("input", { attrs: { type: "text", id: "r-tags" } });
+  tagsInput.value = (draft.tags || []).join(", ");
+  form.append(tagsLabel, tagsInput);
+
+  wrap.appendChild(form);
+
+  // warnings
+  if ((draft.warnings || []).length) {
+    const w = el("div", { class: "card" });
+    w.appendChild(el("h3", { text: "คำเตือนจาก AI" }));
+    const ul = el("ul", { class: "checklist" });
+    for (const item of draft.warnings) ul.appendChild(el("li", {}, [el("span", { text: "⚠️" }), el("span", { text: item })]));
+    w.appendChild(ul);
+    wrap.appendChild(w);
+  }
+
+  // missing info checklist
+  if ((draft.missing_info || []).length) {
+    const m = el("div", { class: "card" });
+    m.appendChild(el("h3", { text: "ข้อมูลที่ควรเพิ่ม (ติ๊กเมื่อเติมแล้ว)" }));
+    const ul = el("ul", { class: "checklist" });
+    for (const item of draft.missing_info) {
+      const cb = el("input", { attrs: { type: "checkbox" } });
+      const lab = el("label", { class: "row", attrs: { style: "gap:8px" } }, [cb, el("span", { text: item })]);
+      ul.appendChild(el("li", {}, [lab]));
+    }
+    m.appendChild(ul);
+    wrap.appendChild(m);
+  }
+
+  // actions
+  const actions = el("div", { class: "card" }, [
+    el("div", { class: "row" }, [
+      el("button", { class: "btn", text: "คัดลอกข้อความโพสต์", attrs: { type: "button" }, on: { click: copyPost } }),
+      el("button", { class: "btn ghost", text: "ให้ AI ร่างใหม่", attrs: { type: "button" }, on: { click: analyze } }),
+      el("div", { class: "spacer" }),
+      el("button", { class: "btn", text: "บันทึกประกาศ", attrs: { type: "button" }, on: { click: saveListing } }),
+    ]),
+  ]);
+  wrap.appendChild(actions);
+  wrap.classList.remove("hidden");
+  wrap.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function listBlock(title, items) {
+  const box = el("div");
+  box.appendChild(el("div", { class: "field", text: title }));
+  const wrap = el("div");
+  (items && items.length ? items : ["—"]).forEach((it) => wrap.appendChild(el("span", { class: "tag", text: it })));
+  box.appendChild(wrap);
+  return box;
+}
+
+/* ------------------------------------------------------------------ *
+ * Copy post text
+ * ------------------------------------------------------------------ */
+function copyPost() {
+  if (!state.draft) return;
+  const d = state.draft;
+  const title = ($("r-title") && $("r-title").value) || d.title_th;
+  const desc = ($("r-desc") && $("r-desc").value) || d.description_th;
+  const tags = ($("r-tags") && $("r-tags").value) || (d.tags || []).join(", ");
+  const price = d.suggested_price_thb || {};
+  const lines = [
+    title,
+    "",
+    desc,
+    "",
+    "💰 ราคา: " + fmtTHB(price.min) + "–" + fmtTHB(price.max) + " บาท (ประมาณการ)",
+    "🏷️ สภาพ: เกรด " + d.condition_grade,
+    (d.colors || []).length ? "🎨 สี: " + d.colors.join(", ") : "",
+    (d.materials_guess || []).length ? "🧵 วัสดุ (คาดเดา): " + d.materials_guess.join(", ") : "",
+    "",
+    tags.split(",").map((t) => "#" + t.trim().replace(/\s+/g, "_")).filter((t) => t !== "#").join(" "),
+    "",
+    "📩 สนใจติดต่อ: [ใส่ช่องทางติดต่อของคุณ]",
+  ];
+  const text = lines.filter((l) => l !== null && l !== undefined).join("\n");
+  navigator.clipboard.writeText(text)
+    .then(() => toast("คัดลอกข้อความโพสต์แล้ว"))
+    .catch(() => {
+      const ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      document.execCommand("copy"); ta.remove();
+      toast("คัดลอกข้อความโพสต์แล้ว");
+    });
+}
+
+/* ------------------------------------------------------------------ *
+ * Save listing
+ * ------------------------------------------------------------------ */
+function collectEditedFields() {
+  const d = state.draft || {};
+  const edited = [];
+  if ($("r-title") && $("r-title").value !== (d.title_th || "")) edited.push("title_th");
+  if ($("r-desc") && $("r-desc").value !== (d.description_th || "")) edited.push("description_th");
+  if ($("r-tags") && $("r-tags").value !== (d.tags || []).join(", ")) edited.push("tags");
+  if ($("r-category") && $("r-category").value !== d.category) edited.push("category");
+  if ($("r-char") && $("r-char").value !== ((d.character_or_series_guess || {}).name || "")) edited.push("character_guess");
+  return edited;
+}
+
+async function saveListing() {
+  if (!state.draft) return;
+  const edited = collectEditedFields();
+  const cg = state.draft.character_or_series_guess || {};
+  const price = state.draft.suggested_price_thb || {};
+  const tags = ($("r-tags").value || "").split(",").map((t) => t.trim()).filter(Boolean);
+
+  const payload = {
+    title_th: $("r-title").value,
+    description_th: $("r-desc").value,
+    category: $("r-category").value,
+    character_guess: $("r-char").value || null,
+    character_confidence: cg.confidence || null,
+    condition_grade: state.draft.condition_grade,
+    price_min: price.min, price_max: price.max,
+    tags, colors: state.draft.colors || [], materials: state.draft.materials_guess || [],
+    missing_info: state.draft.missing_info || [], warnings: state.draft.warnings || [],
+    notes: $("f-notes").value, size: $("f-size").value, brand: $("f-brand").value,
+    purchase_price_thb: $("f-price").value === "" ? null : Number($("f-price").value),
+    source: "ai",
+    ai_draft: state.draft,
+    accepted_as_is: edited.length === 0,
+    edited_fields: edited,
+  };
+
+  const fd = new FormData();
+  fd.append("payload", JSON.stringify(payload));
+  state.images.forEach((item, i) => fd.append("images", item.blob, "photo_" + (i + 1) + ".jpg"));
+
+  try {
+    const res = await fetch("/api/listings", { method: "POST", body: fd });
+    if (!res.ok) {
+      let detail = "บันทึกไม่สำเร็จ (" + res.status + ")";
+      try { const j = await res.json(); detail = j.detail || detail; } catch (e) {}
+      showError("analyze-error", "บันทึกประกาศไม่สำเร็จ", typeof detail === "string" ? detail : "ข้อมูลไม่ถูกต้อง");
+      return;
+    }
+    const saved = await res.json();
+    toast(edited.length === 0 ? "บันทึกแล้ว · ใช้ร่าง AI ตามเดิม" : "บันทึกแล้ว · แก้ไข " + edited.length + " ช่อง");
+    resetCreateForm();
+    go("listings");
+  } catch (e) {
+    showError("analyze-error", "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้", "ลองใหม่อีกครั้ง");
+  }
+}
+
+function resetCreateForm() {
+  state.images = [];
+  state.draft = null;
+  renderPreviews();
+  $("result-wrap").classList.add("hidden");
+  $("result-wrap").replaceChildren();
+  $("f-notes").value = ""; $("f-size").value = ""; $("f-brand").value = ""; $("f-price").value = "";
+  clearError("analyze-error");
+}
+
+/* ------------------------------------------------------------------ *
+ * Listings screen
+ * ------------------------------------------------------------------ */
+async function loadListings() {
+  clearError("listings-error");
+  const q = $("f-search").value.trim();
+  try {
+    const res = await fetch("/api/listings" + (q ? "?q=" + encodeURIComponent(q) : ""));
+    if (!res.ok) throw new Error("status " + res.status);
+    state.listings = await res.json();
+    renderListings();
+  } catch (e) {
+    showError("listings-error", "โหลดประกาศไม่สำเร็จ", "ตรวจสอบการเชื่อมต่อแล้วลองใหม่");
+  }
+}
+
+function renderListings() {
+  const grid = $("listings-grid");
+  grid.replaceChildren();
+  const items = state.listings;
+  $("listings-empty").classList.toggle("hidden", items.length > 0);
+  for (const it of items) {
+    const thumb = el("img", { class: "lc-thumb", attrs: { alt: "รูป " + it.title_th, src: it.thumb_url || "" } });
+    if (!it.thumb_url) thumb.removeAttribute("src");
+    const body = el("div", { class: "lc-body" }, [
+      el("h3", { text: it.title_th }),
+      el("div", { class: "lc-meta" }, [
+        el("span", { class: statusClass(it.condition_grade), text: "เกรด " + it.condition_grade }),
+        el("span", { class: "kv", text: fmtTHB(it.price_min) + "–" + fmtTHB(it.price_max) + " บาท" }),
+        el("span", { class: "kv", text: CATEGORY_LABELS[it.category] || it.category }),
+      ]),
+      el("div", { class: "row", attrs: { style: "margin-top:8px" } }, [
+        el("button", { class: "btn small ghost", text: "แก้ไข", attrs: { type: "button" }, on: { click: () => openEdit(it.id) } }),
+      ]),
+    ]);
+    grid.appendChild(el("div", { class: "listing-card" }, [thumb, body]));
+  }
+}
+
+function findListing(id) { return state.listings.find((l) => l.id === id); }
+
+function openEdit(id) {
+  const it = findListing(id);
+  if (!it) return;
+  state.editId = id;
+  $("edit-title").textContent = "แก้ไขประกาศ #" + id;
+  $("edit-sub").textContent = "แก้ไขได้ทุกช่องที่ต้องการ";
+  $("e-title").value = it.title_th || "";
+  $("e-desc").value = it.description_th || "";
+  $("e-grade").value = it.condition_grade || "B";
+  $("e-category").value = it.category || "other";
+  $("e-min").value = it.price_min == null ? "" : it.price_min;
+  $("e-max").value = it.price_max == null ? "" : it.price_max;
+  $("e-tags").value = (it.tags || []).join(", ");
+  $("edit-modal").showModal();
+}
+
+async function saveEdit() {
+  const id = state.editId;
+  if (id == null) return;
+  const body = {
+    title_th: $("e-title").value,
+    description_th: $("e-desc").value,
+    condition_grade: $("e-grade").value,
+    category: $("e-category").value,
+    price_min: $("e-min").value === "" ? null : Number($("e-min").value),
+    price_max: $("e-max").value === "" ? null : Number($("e-max").value),
+    tags: $("e-tags").value.split(",").map((t) => t.trim()).filter(Boolean),
+  };
+  try {
+    const res = await fetch("/api/listings/" + id, {
+      method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+    });
+    if (!res.ok) { toast("บันทึกไม่สำเร็จ"); return; }
+    $("edit-modal").close();
+    toast("อัปเดตประกาศแล้ว");
+    loadListings();
+  } catch (e) { toast("เชื่อมต่อไม่ได้"); }
+}
+
+async function deleteEdit() {
+  const id = state.editId;
+  if (id == null) return;
+  if (!confirm("ต้องการลบประกาศนี้ใช่หรือไม่?")) return;
+  try {
+    const res = await fetch("/api/listings/" + id, { method: "DELETE" });
+    if (!res.ok && res.status !== 204) { toast("ลบไม่สำเร็จ"); return; }
+    $("edit-modal").close();
+    toast("ลบประกาศแล้ว");
+    loadListings();
+  } catch (e) { toast("เชื่อมต่อไม่ได้"); }
+}
+
+/* ------------------------------------------------------------------ *
+ * Stats screen
+ * ------------------------------------------------------------------ */
+async function loadStats() {
+  clearError("stats-error");
+  const grid = $("stats-grid");
+  grid.replaceChildren();
+  try {
+    const res = await fetch("/api/stats");
+    if (!res.ok) throw new Error("status " + res.status);
+    const s = await res.json();
+    const tiles = [
+      ["ประกาศทั้งหมด", s.total_listings],
+      ["ความหน่วงเฉลี่ย (ms)", s.avg_latency_ms == null ? "—" : s.avg_latency_ms],
+      ["ใช้ร่าง AI ตามเดิม", s.drafts_accepted_without_edits],
+      ["มีผลตอบรับ", s.drafts_with_feedback],
+      ["อัตราใช้ตามเดิม", s.accepted_rate == null ? "—" : Math.round(s.accepted_rate * 100) + "%"],
+      ["แก้ไขเฉลี่ย/ครั้ง", s.avg_edit_rate == null ? "—" : s.avg_edit_rate + " ช่อง"],
+    ];
+    for (const [label, value] of tiles) {
+      grid.appendChild(el("div", { class: "stat" }, [
+        el("b", { text: String(value) }),
+        el("span", { text: label }),
+      ]));
+    }
+    const gradeBox = el("div", { class: "card", attrs: { id: "grade-box", style: "margin-top:16px" } }, [
+      el("h3", { text: "จำนวนตามเกรดสภาพ" }),
+    ]);
+    const grades = s.by_grade || {};
+    if (Object.keys(grades).length === 0) gradeBox.appendChild(el("p", { class: "muted", text: "ยังไม่มีข้อมูล" }));
+    else {
+      const row = el("div", { class: "row" });
+      for (const g of ["A", "B", "C", "D"]) {
+        if (grades[g]) row.appendChild(el("span", { class: statusClass(g), text: "เกรด " + g + ": " + grades[g] }));
+      }
+      gradeBox.appendChild(row);
+    }
+    gradeBox.appendChild(el("p", { class: "muted", attrs: { style: "margin-top:10px" },
+      text: "ผู้ให้บริการ: " + s.provider + " · โมเดล: " + s.model }));
+    const existing = $("grade-box");
+    if (existing) existing.remove();
+    $("screen-stats").querySelector(".card").appendChild(gradeBox);
+  } catch (e) {
+    showError("stats-error", "โหลดสถิติไม่สำเร็จ", "ตรวจสอบการเชื่อมต่อแล้วลองใหม่");
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Wire up
+ * ------------------------------------------------------------------ */
+setupDropzone();
+$("btn-analyze").addEventListener("click", analyze);
+$("btn-refresh").addEventListener("click", loadListings);
+$("f-search").addEventListener("input", () => { clearTimeout(window.__s); window.__s = setTimeout(loadListings, 250); });
+$("e-save").addEventListener("click", saveEdit);
+$("e-delete").addEventListener("click", deleteEdit);
+$("e-cancel").addEventListener("click", () => $("edit-modal").close());
+
+loadStatus();
+loadConfig();
+renderPreviews();
+setInterval(loadStatus, 30000);
+</script>
+</body>
+</html>
